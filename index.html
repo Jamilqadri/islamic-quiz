@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسلامک کوئز مقابلہ | Islamic Quiz Competition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- کوئز سیکشن -->
+        <div id="quiz-section" class="section active">
+            <h1>🌙 اسلامک کوئز مقابلہ</h1>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <div id="question-container">
+                <div id="question-number"></div>
+                <div id="question"></div>
+                <div id="options"></div>
+            </div>
+            <button id="next-btn" onclick="nextQuestion()">➡️ اگلا سوال</button>
+        </div>
+
+        <!-- اسکور سیکشن -->
+        <div id="score-section" class="section">
+            <h1>🏆 آپ کا اسکور</h1>
+            <div id="score-display"></div>
+            <button onclick="showForm()">🎁 انعام حاصل کریں</button>
+        </div>
+
+        <!-- فارم سیکشن -->
+        <div id="form-section" class="section">
+            <h1>📝 ذاتی معلومات</h1>
+            <form id="user-form">
+                <input type="text" id="name" placeholder="📛 آپ کا مکمل نام" required>
+                <input type="tel" id="whatsapp" placeholder="📱 واٹس ایپ نمبر (923001234567)" required>
+                <textarea id="address" placeholder="🏠 مکمل ڈیلیوری ایڈریس (انعام کے لیے)" required></textarea>
+                <button type="submit">✅ معلومات جمع کروائیں</button>
+            </form>
+        </div>
+
+        <!-- کانگریچولیشن سیکشن -->
+        <div id="congrats-section" class="section">
+            <div id="congrats-message"></div>
+            <div class="share-buttons">
+                <button onclick="shareOnWhatsApp()">📱 واٹس ایپ پر شیئر کریں</button>
+                <button onclick="shareOnFacebook()">📘 فیس بک پر شیئر کریں</button>
+                <button onclick="downloadAsImage()">🖼️ تصویر کے طور پر سیو کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
