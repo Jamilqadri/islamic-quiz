@@ -1,0 +1,182 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    direction: rtl;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.section {
+    display: none;
+    padding: 30px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+#question-number {
+    text-align: center;
+    color: #667eea;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+#question {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #444;
+    text-align: center;
+}
+
+.option {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    text-align: right;
+}
+
+.option:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateX(-5px);
+}
+
+.option.selected {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateX(-5px);
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+button:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+}
+
+input, textarea {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: right;
+    transition: border-color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+#score-display {
+    text-align: center;
+    font-size: 48px;
+    color: #667eea;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.share-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.share-buttons button {
+    margin-top: 0;
+}
+
+/* موبائل رےسپانسیو */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .section {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    #question {
+        font-size: 18px;
+    }
+}
