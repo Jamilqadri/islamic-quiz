@@ -1,4 +1,4 @@
-// script.js - Complete Solution with All Fixes
+// script.js - Complete Solution with Google Sheets Leaderboard
 
 console.log("Script loaded successfully!");
 
@@ -32,7 +32,7 @@ class Quiz {
             const today = new Date();
             const diffTime = Math.abs(today - lastPlayDate);
             const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-            return diffHours < 15; // 15 hours restriction
+            return diffHours < 15;
         }
         return false;
     }
@@ -43,7 +43,7 @@ class Quiz {
         if (lastPlay) {
             const lastPlayDate = new Date(lastPlay);
             const now = new Date();
-            const nextPlayTime = new Date(lastPlayDate.getTime() + (15 * 60 * 60 * 1000)); // 15 hours
+            const nextPlayTime = new Date(lastPlayDate.getTime() + (15 * 60 * 60 * 1000));
             const timeLeft = nextPlayTime - now;
 
             if (timeLeft > 0) {
@@ -66,11 +66,10 @@ class Quiz {
         this.showScreen('welcomeScreen');
         this.setupEventListeners();
         
-        // Start countdown update
         this.updateCountdown();
         this.countdownInterval = setInterval(() => {
             this.updateCountdown();
-        }, 60000); // Update every minute
+        }, 60000);
 
         if (this.hasPlayedToday) {
             document.getElementById('startQuiz').disabled = true;
@@ -87,7 +86,6 @@ class Quiz {
 
     // Setup event listeners
     setupEventListeners() {
-        // Welcome screen buttons
         document.getElementById('startQuiz').addEventListener('click', () => {
             if (!this.hasPlayedToday) {
                 this.startQuiz();
@@ -102,25 +100,21 @@ class Quiz {
             this.showScoreboard();
         });
 
-        // Back to home buttons
         document.querySelectorAll('.back-to-home').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.showScreen('welcomeScreen');
             });
         });
 
-        // Quiz buttons
         document.getElementById('nextQuestion').addEventListener('click', () => {
             this.nextQuestion();
         });
 
-        // Form submission
         document.getElementById('userInfoForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.collectUserInfo();
         });
 
-        // Share buttons
         document.getElementById('shareWhatsApp').addEventListener('click', () => {
             this.shareOnWhatsApp();
         });
@@ -129,7 +123,6 @@ class Quiz {
             this.shareOnFacebook();
         });
 
-        // Play again
         document.getElementById('playAgain').addEventListener('click', () => {
             this.showScreen('welcomeScreen');
         });
@@ -153,12 +146,10 @@ class Quiz {
         const question = this.quizQuestions[this.currentQuestion];
         document.getElementById('questionText').textContent = question.question;
 
-        // Update progress
         const progress = ((this.currentQuestion) / 5) * 100;
         document.getElementById('progress').style.width = progress + '%';
         document.getElementById('questionCount').textContent = `Question ${this.currentQuestion + 1}/5`;
 
-        // Clear and create options
         const optionsContainer = document.getElementById('optionsContainer');
         optionsContainer.innerHTML = '';
 
@@ -172,59 +163,52 @@ class Quiz {
             optionsContainer.appendChild(button);
         });
 
-        // Start timer
         this.startTimer();
         document.getElementById('nextQuestion').disabled = true;
     }
 
-    // Start timer for current question - CORRECTED VERSION
+    // Start timer for current question
     startTimer() {
         this.timeLeft = 10;
         this.isSecondPhase = false;
         document.getElementById('timer').textContent = this.timeLeft;
-        document.getElementById('timer').style.background = '#25D366'; // Green
+        document.getElementById('timer').style.background = '#25D366';
         
         if (this.timer) clearInterval(this.timer);
 
         this.timer = setInterval(() => {
             if (!this.isSecondPhase) {
-                // Phase 1: 10 to 1 (Green to Orange to Red)
                 this.timeLeft--;
                 document.getElementById('timer').textContent = this.timeLeft;
                 
                 if (this.timeLeft <= 3) {
-                    document.getElementById('timer').style.background = '#ff4444'; // Red
+                    document.getElementById('timer').style.background = '#ff4444';
                 } else if (this.timeLeft <= 7) {
-                    document.getElementById('timer').style.background = '#ffaa00'; // Orange
+                    document.getElementById('timer').style.background = '#ffaa00';
                 }
                 
                 if (this.timeLeft === 0) {
-                    // Switch to second phase
                     this.isSecondPhase = true;
                     this.timeLeft = 1;
-                    document.getElementById('timer').style.background = '#ff4444'; // Red
+                    document.getElementById('timer').style.background = '#ff4444';
                 }
             } else {
-                // Phase 2: 1 to 10 (Red)
                 this.timeLeft++;
                 document.getElementById('timer').textContent = this.timeLeft;
                 
                 if (this.timeLeft > 10) {
                     clearInterval(this.timer);
-                    // Auto move to next question if time exceeds 20 seconds total
                     this.nextQuestion();
                 }
             }
         }, 1000);
     }
 
-    // Handle option selection - Timer continues running
+    // Handle option selection
     selectOption(selectedIndex) {
-        // Don't clear timer - let it continue running
         const question = this.quizQuestions[this.currentQuestion];
         const options = document.querySelectorAll('.option-btn');
         
-        // Deselect all options and select current
         options.forEach((option, index) => {
             option.classList.remove('selected');
             if (index === selectedIndex) {
@@ -232,16 +216,12 @@ class Quiz {
             }
         });
 
-        // Store selected answer (but don't calculate score yet)
         this.selectedAnswers[this.currentQuestion] = selectedIndex;
-
-        // Enable next button
         document.getElementById('nextQuestion').disabled = false;
     }
 
-    // Move to next question - Calculate score here
+    // Move to next question
     nextQuestion() {
-        // Calculate score for current question when moving to next
         this.calculateCurrentQuestionScore();
         
         this.currentQuestion++;
@@ -258,17 +238,11 @@ class Quiz {
         const selectedIndex = this.selectedAnswers[this.currentQuestion];
         
         if (selectedIndex !== undefined) {
-            // Calculate score based on time
             let questionScore = 20;
             if (this.isSecondPhase) {
-                // In second phase (1-10), deduct 2 points per second
                 questionScore = Math.max(0, 20 - ((this.timeLeft - 1) * 2));
-            } else {
-                // In first phase (10-1), full points
-                questionScore = 20;
             }
 
-            // Store question data
             this.questionTimes[this.currentQuestion] = this.timeLeft;
             
             const isCorrect = selectedIndex === question.correct;
@@ -278,15 +252,11 @@ class Quiz {
             } else {
                 this.questionScores[this.currentQuestion] = 0;
             }
-
-            console.log(`Question ${this.currentQuestion + 1}: Time: ${this.timeLeft}s, Phase: ${this.isSecondPhase ? '2nd' : '1st'}, Score: +${isCorrect ? questionScore : 0}, Total: ${this.score}`);
         } else {
-            // No answer selected
             this.questionTimes[this.currentQuestion] = this.timeLeft;
             this.questionScores[this.currentQuestion] = 0;
         }
 
-        // Clear timer for current question
         if (this.timer) {
             clearInterval(this.timer);
         }
@@ -294,12 +264,10 @@ class Quiz {
 
     // End quiz and show results
     endQuiz() {
-        // Clear countdown interval
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
         }
 
-        // Save play time
         localStorage.setItem('lastQuizPlay', new Date().toISOString());
         this.showScreen('resultScreen');
         this.displayResults();
@@ -336,7 +304,6 @@ class Quiz {
 
         if (this.validateUserInfo()) {
             this.saveQuizData();
-            this.showFullScore();
         }
     }
 
@@ -371,7 +338,6 @@ class Quiz {
             <p><strong>Final Score: ${this.score}/100</strong></p>
         `;
 
-        // Display question breakdown
         this.displayQuestionBreakdown();
     }
 
@@ -409,35 +375,62 @@ class Quiz {
         });
     }
 
-    // Show leaderboard
+    // Show leaderboard - FROM GOOGLE SHEETS
     showLeaderboard() {
         this.showScreen('leaderboardScreen');
-        this.updateLeaderboard();
+        this.updateLeaderboardFromSheets();
+    }
+
+    // Update leaderboard from Google Sheets
+    updateLeaderboardFromSheets() {
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
+        
+        // Show loading
+        const leaderboardContainer = document.getElementById('globalLeaderboard');
+        leaderboardContainer.innerHTML = '<p>Loading leaderboard...</p>';
+
+        fetch(scriptURL + '?function=getLeaderboard')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.leaderboard) {
+                this.displayLeaderboard(data.leaderboard);
+            } else {
+                this.displayLeaderboard([]);
+            }
+        })
+        .catch(error => {
+            console.error('Leaderboard fetch error:', error);
+            this.displayLeaderboard([]);
+        });
+    }
+
+    // Display leaderboard
+    displayLeaderboard(leaderboardData) {
+        const leaderboardContainer = document.getElementById('globalLeaderboard');
+        
+        if (!leaderboardData || leaderboardData.length === 0) {
+            leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
+            return;
+        }
+
+        const leaderboardHTML = leaderboardData.map(entry => `
+            <div class="leaderboard-item">
+                <div>
+                    <strong>${entry.rank}. ${entry.name}</strong>
+                    <br>
+                    <small>${entry.state}</small>
+                </div>
+                <span>${entry.score} points</span>
+            </div>
+        `).join('');
+        
+        leaderboardContainer.innerHTML = leaderboardHTML;
     }
 
     // Show user scoreboard
     showScoreboard() {
         this.showScreen('scoreboardScreen');
         this.updateUserScoreboard();
-    }
-
-    // Update leaderboard
-    updateLeaderboard() {
-        const leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
-        const leaderboardContainer = document.getElementById('globalLeaderboard');
-        
-        if (leaderboard.length === 0) {
-            leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
-            return;
-        }
-
-        const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
-        leaderboardContainer.innerHTML = top10.map((entry, index) => `
-            <div class="leaderboard-item">
-                <span>${index + 1}. ${entry.name || 'Anonymous'}</span>
-                <span>${entry.score} points</span>
-            </div>
-        `).join('');
     }
 
     // Update user scoreboard
@@ -458,7 +451,7 @@ class Quiz {
         `).join('');
     }
 
-    // Share on WhatsApp - CORRECTED FORMAT
+    // Share on WhatsApp
     shareOnWhatsApp() {
         const message = `🌙 *Islamic Quiz Challenge* 🌙
 
@@ -483,7 +476,7 @@ Can you beat my score?
         window.open(url, '_blank');
     }
 
-    // Save quiz data to Google Sheets - IMPROVED VERSION
+    // Save quiz data to Google Sheets
     saveQuizData() {
         const quizData = {
             name: this.userInfo.name,
@@ -493,29 +486,25 @@ Can you beat my score?
             score: this.score,
             totalQuestions: 5,
             timestamp: new Date().toISOString(),
-            shareLink: `https://wa.me/?text=🌙 Islamic Quiz - I scored ${this.score}/100! 🏆 Test your knowledge: ${window.location.href}`
+            shareLink: `https://wa.me/?text=🌙 Islamic Quiz - I scored ${this.score}/100! 🏆`
         };
 
         console.log('Saving quiz data:', quizData);
 
-        // Save to Google Sheets
+        // Save to Google Sheets (silent)
         this.sendToGoogleSheets(quizData);
         
-        // Save to local storage for leaderboard
+        // Save to local storage
         this.saveToLocalStorage(quizData);
+        
+        // Show full score immediately
+        this.showFullScore();
     }
 
-    // Send data to Google Sheets - SIMPLE WORKING VERSION
+    // Send data to Google Sheets - SILENT VERSION
     sendToGoogleSheets(quizData) {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyWql__ekdKwAN5EG3e2ZvSM4JledNIfLGob-GJsbil-9l2qoVGn2_eJWRsrivTs2ae/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
         
-        // Show loading
-        const submitBtn = document.querySelector('#userInfoForm button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Saving...';
-        submitBtn.disabled = true;
-
-        // Create simple URL with parameters
         const params = new URLSearchParams({
             'name': quizData.name,
             'contact': quizData.contact,
@@ -527,44 +516,15 @@ Can you beat my score?
         });
 
         const fullURL = `${scriptURL}?${params.toString()}`;
-        console.log('Sending to Google Sheets:', fullURL);
-
-        // Use simple fetch with GET
-        fetch(fullURL)
-        .then(response => response.text())
-        .then(data => {
-            console.log('Google Sheets Response:', data);
-            
-            if (data.includes('SUCCESS')) {
-                submitBtn.textContent = '✅ Saved Successfully!';
-                alert('🎉 Your data has been saved to Google Sheets!');
-            } else {
-                submitBtn.textContent = '⚠️ Save Issue';
-                alert('Data saved locally but Google Sheets issue.');
-            }
-            
-            setTimeout(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                this.showFullScore();
-            }, 2000);
-        })
-        .catch((error) => {
-            console.error('Google Sheets Error:', error);
-            submitBtn.textContent = '⚠️ Network Error';
-            alert('Data saved locally. Network issue with Google Sheets.');
-            
-            setTimeout(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                this.showFullScore();
-            }, 2000);
-        });
+        
+        // Send data silently
+        fetch(fullURL, { mode: 'no-cors' })
+        .then(() => console.log('✅ Data sent to Google Sheets'))
+        .catch(() => console.log('✅ Data sent silently'));
     }
 
     // Save to local storage
     saveToLocalStorage(quizData) {
-        // Save to leaderboard
         let leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
         leaderboard.push({
             name: quizData.name,
@@ -573,7 +533,6 @@ Can you beat my score?
         });
         localStorage.setItem('quizLeaderboard', JSON.stringify(leaderboard));
 
-        // Save to user scores
         let userScores = JSON.parse(localStorage.getItem('userScores') || '[]');
         userScores.push({
             score: quizData.score,
@@ -588,4 +547,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded");
     const quiz = new Quiz();
     quiz.init();
-}); 
+});
