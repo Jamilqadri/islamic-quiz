@@ -1,56 +1,207 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اسلامک کوئز مقابلہ | Islamic Quiz Competition</title>
+    <title>Islamic Quiz - AlKunooz</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- کوئز سیکشن -->
-        <div id="quiz-section" class="section active">
-            <h1>🌙 اسلامک کوئز مقابلہ</h1>
-            <div class="progress-bar">
-                <div class="progress" id="progress"></div>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>🌙 Islamic Quiz</h1>
+            <p>Test Your Islamic Knowledge</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="welcome-card">
+                <div class="islamic-design">
+                    <div class="mosque-icon">🕌</div>
+                </div>
+                <h2>Welcome to Islamic Quiz</h2>
+                <p>Daily Challenge: 5 Islamic Questions</p>
+
+                <div class="welcome-buttons">
+                    <button id="startQuiz" class="btn-primary">Start Quiz</button>
+                    <button id="viewLeaderboard" class="btn-secondary">View Leaderboard</button>
+                    <button id="viewScoreboard" class="btn-secondary">My Scoreboard</button>
+                </div>
+
+                <div class="features">
+                    <div class="feature">
+                        <span>⏱️</span>
+                        <p>Timer System</p>
+                    </div>
+                    <div class="feature">
+                        <span>🏆</span>
+                        <p>Share Score</p>
+                    </div>
+                    <div class="feature">
+                        <span>📊</span>
+                        <p>Leaderboard</p>
+                    </div>
+                </div>
+
+                <div class="daily-notice">
+                    <p>📅 You can play once per day</p>
+                </div>
             </div>
-            <div id="question-container">
-                <div id="question-number"></div>
-                <div id="question"></div>
-                <div id="options"></div>
-            </div>
-            <button id="next-btn" onclick="nextQuestion()">➡️ اگلا سوال</button>
         </div>
 
-        <!-- اسکور سیکشن -->
-        <div id="score-section" class="section">
-            <h1>🏆 آپ کا اسکور</h1>
-            <div id="score-display"></div>
-            <button onclick="showForm()">🎁 انعام حاصل کریں</button>
-        </div>
-
-        <!-- فارم سیکشن -->
-        <div id="form-section" class="section">
-            <h1>📝 ذاتی معلومات</h1>
-            <form id="user-form">
-                <input type="text" id="name" placeholder="📛 آپ کا مکمل نام" required>
-                <input type="tel" id="whatsapp" placeholder="📱 واٹس ایپ نمبر (923001234567)" required>
-                <textarea id="address" placeholder="🏠 مکمل ڈیلیوری ایڈریس (انعام کے لیے)" required></textarea>
-                <button type="submit">✅ معلومات جمع کروائیں</button>
-            </form>
-        </div>
-
-        <!-- کانگریچولیشن سیکشن -->
-        <div id="congrats-section" class="section">
-            <div id="congrats-message"></div>
-            <div class="share-buttons">
-                <button onclick="shareOnWhatsApp()">📱 واٹس ایپ پر شیئر کریں</button>
-                <button onclick="shareOnFacebook()">📘 فیس بک پر شیئر کریں</button>
-                <button onclick="downloadAsImage()">🖼️ تصویر کے طور پر سیو کریں</button>
+        <!-- Leaderboard Screen -->
+        <div id="leaderboardScreen" class="screen">
+            <div class="result-card">
+                <h2>🏆 Top 10 Leaders</h2>
+                <div id="globalLeaderboard" class="leaderboard">
+                    <!-- Leaderboard will be populated by JavaScript -->
+                </div>
+                <button class="btn-primary back-to-home">Back to Home</button>
             </div>
         </div>
-    </div>
 
+        <!-- Scoreboard Screen -->
+        <div id="scoreboardScreen" class="screen">
+            <div class="result-card">
+                <h2>📊 My Previous Scores</h2>
+                <div id="userScoreboard" class="leaderboard">
+                    <!-- User scores will be populated by JavaScript -->
+                </div>
+                <button class="btn-primary back-to-home">Back to Home</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="screen">
+            <div class="quiz-container">
+                <!-- Header -->
+                <div class="quiz-header">
+                    <div class="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="quiz-info">
+                        <span id="questionCount">Question 1/5</span>
+                        <span id="timer" class="timer">10</span>
+                    </div>
+                </div>
+
+                <!-- Question -->
+                <div class="question-section">
+                    <h2 id="questionText" class="question-text"></h2>
+
+                    <!-- Options -->
+                    <div class="options-container" id="optionsContainer">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="quiz-footer">
+                    <button id="nextQuestion" class="btn-secondary" disabled>Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="resultScreen" class="screen">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="score-circle">
+                        <span id="finalScore">0</span>
+                        <small>/100</small>
+                    </div>
+                    <h2>Congratulations!</h2>
+                    <div id="resultMessage">
+                        <!-- Result message will be inserted here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- User Info Form -->
+                <div class="user-info-form">
+                    <h3>Enter Your Information</h3>
+                    <form id="userInfoForm">
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" required placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactNumber">Contact Number *</label>
+                            <input type="tel" id="contactNumber" required placeholder="Enter your phone number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Complete Address *</label>
+                            <textarea id="address" rows="3" required placeholder="Enter your complete address"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="state">State *</label>
+                            <select id="state" required>
+                                <option value="">Select your state</option>
+                                <option value="up">Uttar Pradesh</option>
+                                <option value="bihar">Bihar</option>
+                                <option value="mp">Madhya Pradesh</option>
+                                <option value="mh">Maharashtra</option>
+                                <option value="rj">Rajasthan</option>
+                                <option value="pb">Punjab</option>
+                                <option value="hr">Haryana</option>
+                                <option value="dl">Delhi</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">View Full Score</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Score Screen -->
+        <div id="fullScoreScreen" class="screen">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="score-circle">
+                        <span id="detailedFinalScore">0</span>
+                        <small>/100</small>
+                    </div>
+                    <h2>Your Detailed Score</h2>
+                    <div id="detailedResultMessage"></div>
+                </div>
+
+                <!-- Detailed Score Breakdown -->
+                <div class="score-breakdown">
+                    <h3>Question-wise Performance</h3>
+                    <div id="questionBreakdown">
+                        <!-- Question breakdown will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Sharing Options -->
+                <div class="share-section">
+                    <h3>Share Your Achievement</h3>
+                    <div class="share-buttons">
+                        <button id="shareWhatsApp" class="btn-share whatsapp">
+                            📱 Share on WhatsApp
+                        </button>
+                        <button id="shareFacebook" class="btn-share facebook">
+                            📘 Share on Facebook
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="playAgain" class="btn-primary">Play Again Tomorrow</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript Files -->
     <script src="questions.js"></script>
     <script src="script.js"></script>
 </body>
