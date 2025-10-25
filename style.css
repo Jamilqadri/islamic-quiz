@@ -180,3 +180,58 @@ textarea {
         font-size: 18px;
     }
 }
+/* Welcome Buttons */
+.welcome-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.welcome-buttons .btn-secondary {
+    background: var(--light-green);
+}
+
+/* User Info Form in Results */
+.user-info-form {
+    background: var(--light-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.user-info-form h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--dark-green);
+}
+
+/* Score Breakdown */
+.score-breakdown {
+    background: var(--light-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.question-breakdown-item {
+    padding: 15px;
+    margin: 10px 0;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-green);
+}
+
+.question-breakdown-item.correct {
+    border-left-color: var(--primary-green);
+}
+
+.question-breakdown-item.incorrect {
+    border-left-color: #ff4444;
+}
+
+/* Back to Home Button */
+.back-to-home {
+    margin-top: 20px;
+}
