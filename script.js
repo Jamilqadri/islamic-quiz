@@ -505,59 +505,60 @@ Can you beat my score?
         this.saveToLocalStorage(quizData);
     }
 
-    // Send data to Google Sheets - IMPROVED VERSION
+    // Send data to Google Sheets - SIMPLE WORKING VERSION
     sendToGoogleSheets(quizData) {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyWql__ekdKwAN5EG3e2ZvSM4JledNIfLGob-GJsbil-9l2qoVGn2_eJWRsrivTs2ae/exec';
         
-        // Create URL encoded data
-        const params = new URLSearchParams();
-        params.append('name', quizData.name);
-        params.append('contact', quizData.contact);
-        params.append('address', quizData.address);
-        params.append('state', quizData.state);
-        params.append('score', quizData.score.toString());
-        params.append('timestamp', quizData.timestamp);
-        params.append('shareLink', quizData.shareLink);
+        // Show loading
+        const submitBtn = document.querySelector('#userInfoForm button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
 
-        // Use both GET and POST methods to ensure data saving
-        fetch(`${scriptURL}?${params.toString()}`, {
-            method: 'GET',
-        })
+        // Create simple URL with parameters
+        const params = new URLSearchParams({
+            'name': quizData.name,
+            'contact': quizData.contact,
+            'address': quizData.address,
+            'state': quizData.state,
+            'score': quizData.score.toString(),
+            'timestamp': quizData.timestamp,
+            'shareLink': quizData.shareLink
+        });
+
+        const fullURL = `${scriptURL}?${params.toString()}`;
+        console.log('Sending to Google Sheets:', fullURL);
+
+        // Use simple fetch with GET
+        fetch(fullURL)
         .then(response => response.text())
         .then(data => {
-            console.log('Google Sheets Success:', data);
-            alert('✅ Your score has been saved successfully!');
+            console.log('Google Sheets Response:', data);
+            
+            if (data.includes('SUCCESS')) {
+                submitBtn.textContent = '✅ Saved Successfully!';
+                alert('🎉 Your data has been saved to Google Sheets!');
+            } else {
+                submitBtn.textContent = '⚠️ Save Issue';
+                alert('Data saved locally but Google Sheets issue.');
+            }
+            
+            setTimeout(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                this.showFullScore();
+            }, 2000);
         })
         .catch((error) => {
             console.error('Google Sheets Error:', error);
-            // Try POST method as fallback
-            this.tryPostMethod(quizData, scriptURL);
-        });
-    }
-
-    // Try POST method as fallback
-    tryPostMethod(quizData, scriptURL) {
-        const formData = new FormData();
-        formData.append('name', quizData.name);
-        formData.append('contact', quizData.contact);
-        formData.append('address', quizData.address);
-        formData.append('state', quizData.state);
-        formData.append('score', quizData.score.toString());
-        formData.append('timestamp', quizData.timestamp);
-        formData.append('shareLink', quizData.shareLink);
-
-        fetch(scriptURL, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Google Sheets POST Success:', data);
-            alert('✅ Your score has been saved successfully!');
-        })
-        .catch((error) => {
-            console.error('Google Sheets POST Error:', error);
-            alert('⚠️ Score saved locally, but there was an issue with online storage.');
+            submitBtn.textContent = '⚠️ Network Error';
+            alert('Data saved locally. Network issue with Google Sheets.');
+            
+            setTimeout(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                this.showFullScore();
+            }, 2000);
         });
     }
 
@@ -587,4 +588,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded");
     const quiz = new Quiz();
     quiz.init();
-});
+}); 
