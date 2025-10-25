@@ -1,4 +1,4 @@
-// script.js - Complete Solution with Google Sheets Leaderboard
+// script.js - Complete Solution with New Google Script URL
 
 console.log("Script loaded successfully!");
 
@@ -381,7 +381,7 @@ class Quiz {
         this.updateLeaderboardFromSheets();
     }
 
-    // Update leaderboard from Google Sheets
+    // Update leaderboard from Google Sheets - WITH NEW URL
     updateLeaderboardFromSheets() {
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwEDpBqpPoIWceuNEhLFy3aQ9Q6WuL4N8W9JY-E-naXwl3M0rJVIWqq8rJCemmJcP9O/exec';
         
@@ -389,18 +389,26 @@ class Quiz {
         const leaderboardContainer = document.getElementById('globalLeaderboard');
         leaderboardContainer.innerHTML = '<p>Loading leaderboard...</p>';
 
+        console.log('🔄 Fetching leaderboard from Google Sheets...');
+
         fetch(scriptURL + '?function=getLeaderboard')
-        .then(response => response.json())
+        .then(response => {
+            console.log('📡 Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('✅ Leaderboard data:', data);
             if (data.success && data.leaderboard) {
                 this.displayLeaderboard(data.leaderboard);
             } else {
-                this.displayLeaderboard([]);
+                console.log('🔄 Falling back to local storage');
+                this.updateLeaderboardFromLocalStorage();
             }
         })
         .catch(error => {
-            console.error('Leaderboard fetch error:', error);
-            this.displayLeaderboard([]);
+            console.error('💥 Leaderboard fetch error:', error);
+            console.log('🔄 Falling back to local storage due to error');
+            this.updateLeaderboardFromLocalStorage();
         });
     }
 
@@ -419,6 +427,31 @@ class Quiz {
                     <strong>${entry.rank}. ${entry.name}</strong>
                     <br>
                     <small>${entry.state}</small>
+                </div>
+                <span>${entry.score} points</span>
+            </div>
+        `).join('');
+        
+        leaderboardContainer.innerHTML = leaderboardHTML;
+    }
+
+    // Fallback to local storage
+    updateLeaderboardFromLocalStorage() {
+        const leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
+        const leaderboardContainer = document.getElementById('globalLeaderboard');
+        
+        if (leaderboard.length === 0) {
+            leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
+            return;
+        }
+
+        const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+        const leaderboardHTML = top10.map((entry, index) => `
+            <div class="leaderboard-item">
+                <div>
+                    <strong>${index + 1}. ${entry.name || 'Anonymous'}</strong>
+                    <br>
+                    <small>${entry.state || 'Unknown'}</small>
                 </div>
                 <span>${entry.score} points</span>
             </div>
@@ -501,7 +534,7 @@ Can you beat my score?
         this.showFullScore();
     }
 
-    // Send data to Google Sheets - SILENT VERSION
+    // Send data to Google Sheets - WITH NEW URL
     sendToGoogleSheets(quizData) {
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwEDpBqpPoIWceuNEhLFy3aQ9Q6WuL4N8W9JY-E-naXwl3M0rJVIWqq8rJCemmJcP9O/exec';
         
@@ -516,6 +549,8 @@ Can you beat my score?
         });
 
         const fullURL = `${scriptURL}?${params.toString()}`;
+        
+        console.log('🔄 Sending data to Google Sheets...');
         
         // Send data silently
         fetch(fullURL, { mode: 'no-cors' })
@@ -547,4 +582,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded");
     const quiz = new Quiz();
     quiz.init();
-});
+}); 
