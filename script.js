@@ -507,7 +507,7 @@ Can you beat my score?
 
     // Send data to Google Sheets - SIMPLE WORKING VERSION
     sendToGoogleSheets(quizData) {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyWql__ekdKwAN5EG3e2ZvSM4JledNIfLGob-GJsbil-9l2qoVGn2_eJWRsrivTs2ae/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwssBD8NJroqoieQlKqi-6-16r4CLoZ3Eetx_0IYXvlurZd5NTuVT0PTgM1oFDHSh0XFg/exec';
         
         // Show loading
         const submitBtn = document.querySelector('#userInfoForm button[type="submit"]');
