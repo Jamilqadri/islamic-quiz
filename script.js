@@ -1,4 +1,4 @@
-// script.js - Complete Solution
+// script.js - Complete Solution with All Fixes
 
 console.log("Script loaded successfully!");
 
@@ -20,6 +20,7 @@ class Quiz {
         this.selectedAnswers = [];
         this.quizQuestions = [];
         this.hasPlayedToday = this.checkDailyPlay();
+        this.countdownInterval = null;
         console.log("Quiz class initialized");
     }
 
@@ -31,9 +32,32 @@ class Quiz {
             const today = new Date();
             const diffTime = Math.abs(today - lastPlayDate);
             const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-            return diffHours < 23;
+            return diffHours < 15; // 15 hours restriction
         }
         return false;
+    }
+
+    // Update countdown timer
+    updateCountdown() {
+        const lastPlay = localStorage.getItem('lastQuizPlay');
+        if (lastPlay) {
+            const lastPlayDate = new Date(lastPlay);
+            const now = new Date();
+            const nextPlayTime = new Date(lastPlayDate.getTime() + (15 * 60 * 60 * 1000)); // 15 hours
+            const timeLeft = nextPlayTime - now;
+
+            if (timeLeft > 0) {
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                document.querySelector('.daily-notice p').textContent = 
+                    `⏳ You can play again in ${hours}h ${minutes}m`;
+            } else {
+                document.querySelector('.daily-notice p').textContent = 
+                    "✅ You can play now!";
+                this.hasPlayedToday = false;
+                document.getElementById('startQuiz').disabled = false;
+            }
+        }
     }
 
     // Initialize the quiz
@@ -42,10 +66,14 @@ class Quiz {
         this.showScreen('welcomeScreen');
         this.setupEventListeners();
         
+        // Start countdown update
+        this.updateCountdown();
+        this.countdownInterval = setInterval(() => {
+            this.updateCountdown();
+        }, 60000); // Update every minute
+
         if (this.hasPlayedToday) {
             document.getElementById('startQuiz').disabled = true;
-            document.querySelector('.daily-notice p').textContent = 
-                "📅 You can play again after 23 hours!";
         }
     }
 
@@ -149,7 +177,7 @@ class Quiz {
         document.getElementById('nextQuestion').disabled = true;
     }
 
-    // Start timer for current question
+    // Start timer for current question - CORRECTED VERSION
     startTimer() {
         this.timeLeft = 10;
         this.isSecondPhase = false;
@@ -159,32 +187,40 @@ class Quiz {
         if (this.timer) clearInterval(this.timer);
 
         this.timer = setInterval(() => {
-            this.timeLeft--;
-            document.getElementById('timer').textContent = this.timeLeft;
-            
-            if (this.timeLeft === 0 && !this.isSecondPhase) {
-                // Switch to second phase
-                this.isSecondPhase = true;
-                this.timeLeft = 1;
-                document.getElementById('timer').style.background = '#ff4444'; // Red
-            } else if (this.isSecondPhase) {
+            if (!this.isSecondPhase) {
+                // Phase 1: 10 to 1 (Green to Orange to Red)
+                this.timeLeft--;
+                document.getElementById('timer').textContent = this.timeLeft;
+                
+                if (this.timeLeft <= 3) {
+                    document.getElementById('timer').style.background = '#ff4444'; // Red
+                } else if (this.timeLeft <= 7) {
+                    document.getElementById('timer').style.background = '#ffaa00'; // Orange
+                }
+                
+                if (this.timeLeft === 0) {
+                    // Switch to second phase
+                    this.isSecondPhase = true;
+                    this.timeLeft = 1;
+                    document.getElementById('timer').style.background = '#ff4444'; // Red
+                }
+            } else {
+                // Phase 2: 1 to 10 (Red)
                 this.timeLeft++;
+                document.getElementById('timer').textContent = this.timeLeft;
+                
                 if (this.timeLeft > 10) {
                     clearInterval(this.timer);
+                    // Auto move to next question if time exceeds 20 seconds total
                     this.nextQuestion();
                 }
-            }
-            
-            if (this.timeLeft <= 3 && !this.isSecondPhase) {
-                document.getElementById('timer').style.background = '#ffaa00'; // Orange
             }
         }, 1000);
     }
 
-    // Handle option selection
+    // Handle option selection - Timer continues running
     selectOption(selectedIndex) {
-        clearInterval(this.timer);
-        
+        // Don't clear timer - let it continue running
         const question = this.quizQuestions[this.currentQuestion];
         const options = document.querySelectorAll('.option-btn');
         
@@ -196,31 +232,18 @@ class Quiz {
             }
         });
 
-        // Calculate score
-        let questionScore = 20;
-        if (this.isSecondPhase) {
-            questionScore = Math.max(0, 20 - ((this.timeLeft - 1) * 2));
-        }
+        // Store selected answer (but don't calculate score yet)
+        this.selectedAnswers[this.currentQuestion] = selectedIndex;
 
-        // Store question data
-        this.questionTimes.push(this.timeLeft);
-        this.selectedAnswers.push(selectedIndex);
-        
-        const isCorrect = selectedIndex === question.correct;
-        if (isCorrect) {
-            this.score += questionScore;
-            this.questionScores.push(questionScore);
-        } else {
-            this.questionScores.push(0);
-        }
-
-        console.log(`Question ${this.currentQuestion + 1}: Time: ${this.timeLeft}s, Score: +${isCorrect ? questionScore : 0}, Total: ${this.score}`);
-
+        // Enable next button
         document.getElementById('nextQuestion').disabled = false;
     }
 
-    // Move to next question
+    // Move to next question - Calculate score here
     nextQuestion() {
+        // Calculate score for current question when moving to next
+        this.calculateCurrentQuestionScore();
+        
         this.currentQuestion++;
         if (this.currentQuestion < 5) {
             this.displayQuestion();
@@ -229,8 +252,54 @@ class Quiz {
         }
     }
 
+    // Calculate score for current question
+    calculateCurrentQuestionScore() {
+        const question = this.quizQuestions[this.currentQuestion];
+        const selectedIndex = this.selectedAnswers[this.currentQuestion];
+        
+        if (selectedIndex !== undefined) {
+            // Calculate score based on time
+            let questionScore = 20;
+            if (this.isSecondPhase) {
+                // In second phase (1-10), deduct 2 points per second
+                questionScore = Math.max(0, 20 - ((this.timeLeft - 1) * 2));
+            } else {
+                // In first phase (10-1), full points
+                questionScore = 20;
+            }
+
+            // Store question data
+            this.questionTimes[this.currentQuestion] = this.timeLeft;
+            
+            const isCorrect = selectedIndex === question.correct;
+            if (isCorrect) {
+                this.score += questionScore;
+                this.questionScores[this.currentQuestion] = questionScore;
+            } else {
+                this.questionScores[this.currentQuestion] = 0;
+            }
+
+            console.log(`Question ${this.currentQuestion + 1}: Time: ${this.timeLeft}s, Phase: ${this.isSecondPhase ? '2nd' : '1st'}, Score: +${isCorrect ? questionScore : 0}, Total: ${this.score}`);
+        } else {
+            // No answer selected
+            this.questionTimes[this.currentQuestion] = this.timeLeft;
+            this.questionScores[this.currentQuestion] = 0;
+        }
+
+        // Clear timer for current question
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+    }
+
     // End quiz and show results
     endQuiz() {
+        // Clear countdown interval
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+
+        // Save play time
         localStorage.setItem('lastQuizPlay', new Date().toISOString());
         this.showScreen('resultScreen');
         this.displayResults();
@@ -314,20 +383,27 @@ class Quiz {
         this.quizQuestions.forEach((question, index) => {
             const isCorrect = this.selectedAnswers[index] === question.correct;
             const timeTaken = this.questionTimes[index];
-            const scoreEarned = this.questionScores[index];
+            const scoreEarned = this.questionScores[index] || 0;
             const maxScore = 20;
 
             const breakdownItem = document.createElement('div');
             breakdownItem.className = `question-breakdown-item ${isCorrect ? 'correct' : 'incorrect'}`;
+            
+            let timeInfo = '';
+            if (timeTaken <= 10) {
+                timeInfo = `<p style="color: #25D366;">Answered in ${timeTaken}s: Full points!</p>`;
+            } else {
+                timeInfo = `<p style="color: #ff4444;">Time penalty: Answered in ${timeTaken}s (-${maxScore - scoreEarned} points)</p>`;
+            }
+
             breakdownItem.innerHTML = `
                 <h4>Question ${index + 1}: ${question.question}</h4>
-                <p><strong>Your Answer:</strong> ${question.options[this.selectedAnswers[index]]}</p>
+                <p><strong>Your Answer:</strong> ${this.selectedAnswers[index] !== undefined ? question.options[this.selectedAnswers[index]] : 'Not answered'}</p>
                 <p><strong>Correct Answer:</strong> ${question.options[question.correct]}</p>
                 <p><strong>Time Taken:</strong> ${timeTaken} seconds</p>
                 <p><strong>Score:</strong> ${scoreEarned}/${maxScore} points</p>
-                ${!isCorrect ? '<p style="color: #ff4444;">Incorrect answer: 0 points</p>' : 
-                  timeTaken > 10 ? `<p style="color: #ff4444;">Time penalty: -${maxScore - scoreEarned} points</p>` : 
-                  '<p style="color: #25D366;">Perfect timing: Full points!</p>'}
+                ${timeInfo}
+                ${!isCorrect ? '<p style="color: #ff4444;">Incorrect answer: 0 points</p>' : ''}
             `;
             breakdownContainer.appendChild(breakdownItem);
         });
@@ -382,18 +458,17 @@ class Quiz {
         `).join('');
     }
 
-    // Share on WhatsApp
+    // Share on WhatsApp - CORRECTED FORMAT
     shareOnWhatsApp() {
         const message = `🌙 *Islamic Quiz Challenge* 🌙
 
-I scored ${this.score}/100 in Islamic Quiz! 🏆
+I got a PERFECT SCORE! Can you beat me? 🏆
 
-${this.score >= 80 ? "Masha Allah! I have excellent Islamic knowledge!" : 
-  this.score >= 60 ? "Alhamdulillah! I have good Islamic knowledge!" :
-  this.score >= 40 ? "Alhamdulillah! I'm learning more about Islam!" :
-  "Insha Allah I will improve my Islamic knowledge!"}
+🏆 My Score: ${this.score}/100
+👤 Name: ${this.userInfo.name || 'Quiz Player'}
 
-Can you beat my score? Test your Islamic knowledge!
+I challenge you to test your Islamic knowledge! 
+Can you beat my score? 
 
 🔗 Take the quiz here: ${window.location.href}`;
 
@@ -408,7 +483,7 @@ Can you beat my score? Test your Islamic knowledge!
         window.open(url, '_blank');
     }
 
-    // Save quiz data to Google Sheets
+    // Save quiz data to Google Sheets - IMPROVED VERSION
     saveQuizData() {
         const quizData = {
             name: this.userInfo.name,
@@ -421,6 +496,8 @@ Can you beat my score? Test your Islamic knowledge!
             shareLink: `https://wa.me/?text=🌙 Islamic Quiz - I scored ${this.score}/100! 🏆 Test your knowledge: ${window.location.href}`
         };
 
+        console.log('Saving quiz data:', quizData);
+
         // Save to Google Sheets
         this.sendToGoogleSheets(quizData);
         
@@ -428,16 +505,44 @@ Can you beat my score? Test your Islamic knowledge!
         this.saveToLocalStorage(quizData);
     }
 
-    // Send data to Google Sheets
+    // Send data to Google Sheets - IMPROVED VERSION
     sendToGoogleSheets(quizData) {
         const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
         
+        // Create URL encoded data
+        const params = new URLSearchParams();
+        params.append('name', quizData.name);
+        params.append('contact', quizData.contact);
+        params.append('address', quizData.address);
+        params.append('state', quizData.state);
+        params.append('score', quizData.score.toString());
+        params.append('timestamp', quizData.timestamp);
+        params.append('shareLink', quizData.shareLink);
+
+        // Use both GET and POST methods to ensure data saving
+        fetch(`${scriptURL}?${params.toString()}`, {
+            method: 'GET',
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log('Google Sheets Success:', data);
+            alert('✅ Your score has been saved successfully!');
+        })
+        .catch((error) => {
+            console.error('Google Sheets Error:', error);
+            // Try POST method as fallback
+            this.tryPostMethod(quizData, scriptURL);
+        });
+    }
+
+    // Try POST method as fallback
+    tryPostMethod(quizData, scriptURL) {
         const formData = new FormData();
         formData.append('name', quizData.name);
         formData.append('contact', quizData.contact);
         formData.append('address', quizData.address);
         formData.append('state', quizData.state);
-        formData.append('score', quizData.score);
+        formData.append('score', quizData.score.toString());
         formData.append('timestamp', quizData.timestamp);
         formData.append('shareLink', quizData.shareLink);
 
@@ -447,10 +552,12 @@ Can you beat my score? Test your Islamic knowledge!
         })
         .then(response => response.text())
         .then(data => {
-            console.log('Success:', data);
+            console.log('Google Sheets POST Success:', data);
+            alert('✅ Your score has been saved successfully!');
         })
         .catch((error) => {
-            console.error('Error:', error);
+            console.error('Google Sheets POST Error:', error);
+            alert('⚠️ Score saved locally, but there was an issue with online storage.');
         });
     }
 
