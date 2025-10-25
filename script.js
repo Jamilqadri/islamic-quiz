@@ -1,4 +1,4 @@
-// script.js
+// script.js - Complete Solution
 
 console.log("Script loaded successfully!");
 
@@ -14,6 +14,11 @@ class Quiz {
         };
         this.timer = null;
         this.timeLeft = 10;
+        this.isSecondPhase = false;
+        this.questionTimes = [];
+        this.questionScores = [];
+        this.selectedAnswers = [];
+        this.quizQuestions = [];
         this.hasPlayedToday = this.checkDailyPlay();
         console.log("Quiz class initialized");
     }
@@ -24,7 +29,9 @@ class Quiz {
         if (lastPlay) {
             const lastPlayDate = new Date(lastPlay);
             const today = new Date();
-            return lastPlayDate.toDateString() === today.toDateString();
+            const diffTime = Math.abs(today - lastPlayDate);
+            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+            return diffHours < 23;
         }
         return false;
     }
@@ -35,113 +42,95 @@ class Quiz {
         this.showScreen('welcomeScreen');
         this.setupEventListeners();
         
-        // If already played today, show message
         if (this.hasPlayedToday) {
             document.getElementById('startQuiz').disabled = true;
             document.querySelector('.daily-notice p').textContent = 
-                "📅 You have already played today. Come back tomorrow!";
+                "📅 You can play again after 23 hours!";
         }
     }
 
     // Show specific screen
     showScreen(screenId) {
-        console.log("Showing screen:", screenId);
-        // Hide all screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        // Show target screen
         document.getElementById(screenId).classList.add('active');
     }
 
     // Setup event listeners
     setupEventListeners() {
-        console.log("Setting up event listeners");
+        // Welcome screen buttons
+        document.getElementById('startQuiz').addEventListener('click', () => {
+            if (!this.hasPlayedToday) {
+                this.startQuiz();
+            }
+        });
 
-        // Welcome screen start button
-        const startQuizBtn = document.getElementById('startQuiz');
-        if (startQuizBtn) {
-            startQuizBtn.addEventListener('click', () => {
-                if (!this.hasPlayedToday) {
-                    console.log("Start quiz button clicked");
-                    this.startQuiz();
-                }
-            });
-        }
+        document.getElementById('viewLeaderboard').addEventListener('click', () => {
+            this.showLeaderboard();
+        });
 
-        // Next question button
-        const nextQuestionBtn = document.getElementById('nextQuestion');
-        if (nextQuestionBtn) {
-            nextQuestionBtn.addEventListener('click', () => {
-                console.log("Next question button clicked");
-                this.nextQuestion();
-            });
-        }
+        document.getElementById('viewScoreboard').addEventListener('click', () => {
+            this.showScoreboard();
+        });
 
-        // Play again button
-        const playAgainBtn = document.getElementById('playAgain');
-        if (playAgainBtn) {
-            playAgainBtn.addEventListener('click', () => {
-                console.log("Play again button clicked");
+        // Back to home buttons
+        document.querySelectorAll('.back-to-home').forEach(btn => {
+            btn.addEventListener('click', () => {
                 this.showScreen('welcomeScreen');
             });
-        }
+        });
 
-        // User info form submission
-        const userInfoForm = document.getElementById('userInfoForm');
-        if (userInfoForm) {
-            userInfoForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                console.log("User info form submitted");
-                this.collectUserInfo();
-            });
-        }
+        // Quiz buttons
+        document.getElementById('nextQuestion').addEventListener('click', () => {
+            this.nextQuestion();
+        });
+
+        // Form submission
+        document.getElementById('userInfoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.collectUserInfo();
+        });
 
         // Share buttons
-        const shareWhatsApp = document.getElementById('shareWhatsApp');
-        if (shareWhatsApp) {
-            shareWhatsApp.addEventListener('click', () => {
-                this.shareOnWhatsApp();
-            });
-        }
+        document.getElementById('shareWhatsApp').addEventListener('click', () => {
+            this.shareOnWhatsApp();
+        });
 
-        const shareFacebook = document.getElementById('shareFacebook');
-        if (shareFacebook) {
-            shareFacebook.addEventListener('click', () => {
-                this.shareOnFacebook();
-            });
-        }
+        document.getElementById('shareFacebook').addEventListener('click', () => {
+            this.shareOnFacebook();
+        });
 
-        // Download Image button
-        const downloadImage = document.getElementById('downloadImage');
-        if (downloadImage) {
-            downloadImage.addEventListener('click', () => {
-                this.downloadScoreImage();
-            });
-        }
+        // Play again
+        document.getElementById('playAgain').addEventListener('click', () => {
+            this.showScreen('welcomeScreen');
+        });
     }
 
-    // Start the quiz (direct without form)
+    // Start the quiz
     startQuiz() {
-        console.log("Starting quiz");
+        this.quizQuestions = getRandomQuestions();
         this.showScreen('quizScreen');
         this.currentQuestion = 0;
         this.score = 0;
+        this.isSecondPhase = false;
+        this.questionTimes = [];
+        this.questionScores = [];
+        this.selectedAnswers = [];
         this.displayQuestion();
     }
 
     // Display current question
     displayQuestion() {
-        console.log("Displaying question:", this.currentQuestion);
-
-        const question = quizQuestions[this.currentQuestion];
+        const question = this.quizQuestions[this.currentQuestion];
         document.getElementById('questionText').textContent = question.question;
 
-        // Update progress (5 questions fixed)
+        // Update progress
         const progress = ((this.currentQuestion) / 5) * 100;
         document.getElementById('progress').style.width = progress + '%';
         document.getElementById('questionCount').textContent = `Question ${this.currentQuestion + 1}/5`;
 
+        // Clear and create options
         const optionsContainer = document.getElementById('optionsContainer');
         optionsContainer.innerHTML = '';
 
@@ -150,7 +139,6 @@ class Quiz {
             button.textContent = option;
             button.className = 'option-btn';
             button.addEventListener('click', () => {
-                console.log("Option clicked:", index);
                 this.selectOption(index);
             });
             optionsContainer.appendChild(button);
@@ -158,76 +146,82 @@ class Quiz {
 
         // Start timer
         this.startTimer();
-
-        // Disable next button initially
         document.getElementById('nextQuestion').disabled = true;
     }
 
     // Start timer for current question
     startTimer() {
         this.timeLeft = 10;
+        this.isSecondPhase = false;
         document.getElementById('timer').textContent = this.timeLeft;
         document.getElementById('timer').style.background = '#25D366'; // Green
         
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
+        if (this.timer) clearInterval(this.timer);
 
         this.timer = setInterval(() => {
             this.timeLeft--;
             document.getElementById('timer').textContent = this.timeLeft;
             
-            // Timer color change - Green to Red
-            if (this.timeLeft <= 3) {
+            if (this.timeLeft === 0 && !this.isSecondPhase) {
+                // Switch to second phase
+                this.isSecondPhase = true;
+                this.timeLeft = 1;
                 document.getElementById('timer').style.background = '#ff4444'; // Red
-            } else if (this.timeLeft <= 7) {
-                document.getElementById('timer').style.background = '#ffaa00'; // Orange
+            } else if (this.isSecondPhase) {
+                this.timeLeft++;
+                if (this.timeLeft > 10) {
+                    clearInterval(this.timer);
+                    this.nextQuestion();
+                }
             }
             
-            if (this.timeLeft <= 0) {
-                clearInterval(this.timer);
-                this.nextQuestion();
+            if (this.timeLeft <= 3 && !this.isSecondPhase) {
+                document.getElementById('timer').style.background = '#ffaa00'; // Orange
             }
         }, 1000);
     }
 
-    // Handle option selection with time-based scoring
+    // Handle option selection
     selectOption(selectedIndex) {
-        console.log("Selected option:", selectedIndex);
+        clearInterval(this.timer);
         
-        // Calculate score based on time (20 - (10-time)*2)
-        let questionScore = 20;
-        if (this.timeLeft < 10) {
-            questionScore = Math.max(0, 20 - ((10 - this.timeLeft) * 2));
-        }
-        
-        // Clear timer
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-
-        const question = quizQuestions[this.currentQuestion];
+        const question = this.quizQuestions[this.currentQuestion];
         const options = document.querySelectorAll('.option-btn');
-
-        // Mark selected option
+        
+        // Deselect all options and select current
         options.forEach((option, index) => {
+            option.classList.remove('selected');
             if (index === selectedIndex) {
                 option.classList.add('selected');
-                if (index === question.correct) {
-                    this.score += questionScore;
-                    console.log(`Correct! Time: ${this.timeLeft}s, Score: +${questionScore}, Total: ${this.score}`);
-                }
             }
         });
 
-        // Enable next button
+        // Calculate score
+        let questionScore = 20;
+        if (this.isSecondPhase) {
+            questionScore = Math.max(0, 20 - ((this.timeLeft - 1) * 2));
+        }
+
+        // Store question data
+        this.questionTimes.push(this.timeLeft);
+        this.selectedAnswers.push(selectedIndex);
+        
+        const isCorrect = selectedIndex === question.correct;
+        if (isCorrect) {
+            this.score += questionScore;
+            this.questionScores.push(questionScore);
+        } else {
+            this.questionScores.push(0);
+        }
+
+        console.log(`Question ${this.currentQuestion + 1}: Time: ${this.timeLeft}s, Score: +${isCorrect ? questionScore : 0}, Total: ${this.score}`);
+
         document.getElementById('nextQuestion').disabled = false;
     }
 
     // Move to next question
     nextQuestion() {
         this.currentQuestion++;
-
         if (this.currentQuestion < 5) {
             this.displayQuestion();
         } else {
@@ -237,11 +231,7 @@ class Quiz {
 
     // End quiz and show results
     endQuiz() {
-        console.log("Ending quiz. Final score:", this.score);
-
-        // Save play date
         localStorage.setItem('lastQuizPlay', new Date().toISOString());
-        
         this.showScreen('resultScreen');
         this.displayResults();
     }
@@ -250,96 +240,160 @@ class Quiz {
     displayResults() {
         document.getElementById('finalScore').textContent = this.score;
         
-        // Result message based on score
         let message = '';
-        let congrats = '';
-
         if (this.score >= 80) {
-            message = 'ماشاءاللہ! آپ کا اسلامی علم بہت عمدہ ہے۔ 🎉';
-            congrats = 'بہت مبارک ہو! آپ نے شاندار کارکردگی دکھائی۔';
+            message = 'Excellent! You have great Islamic knowledge. 🎉';
         } else if (this.score >= 60) {
-            message = 'بہت خوب! آپ کا اسلامی علم قابل تعریف ہے۔ 👍';
-            congrats = 'مبارک ہو! آپ کی کارکردگی بہت اچھی ہے۔';
+            message = 'Good job! Your Islamic knowledge is impressive. 👍';
         } else if (this.score >= 40) {
-            message = 'اچھا ہے! اسلامی علم میں مزید اضافہ کریں۔ 📚';
-            congrats = 'کوشش جاری رکھیں، آپ بہتر کر سکتے ہیں۔';
+            message = 'Fair! Keep learning more about Islam. 📚';
         } else {
-            message = 'مطالعہ جاری رکھیں! اسلام میں علم کا سمندر ہے۔ 🌟';
-            congrats = 'کوشش کرتے رہیں، انشاءاللہ آپ بہتر کریں گے۔';
+            message = 'Keep studying! Islam has vast knowledge to explore. 🌟';
         }
 
         document.getElementById('resultMessage').innerHTML = `
-            <h3>${congrats}</h3>
+            <h3>Congratulations!</h3>
             <p>${message}</p>
-            <p><strong>آپ کا اسکور: ${this.score}/100</strong></p>
+            <p><strong>Your Score: ${this.score}/100</strong></p>
         `;
-
-        // Update leaderboard
-        this.updateLeaderboard();
     }
 
-    // Update leaderboard
-    updateLeaderboard() {
-        // Get existing leaderboard or create new
-        let leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
-        
-        // Add current score (without name for now)
-        leaderboard.push({
-            score: this.score,
-            timestamp: new Date().toISOString()
-        });
-        
-        // Sort by score (descending) and keep top 10
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard = leaderboard.slice(0, 10);
-        
-        // Save back to localStorage
-        localStorage.setItem('quizLeaderboard', JSON.stringify(leaderboard));
-        
-        // Display leaderboard
-        const leaderboardHTML = leaderboard.map((entry, index) => `
-            <div class="leaderboard-item">
-                <span>${index + 1}. ${entry.name || 'User'}</span>
-                <span>${entry.score} points</span>
-            </div>
-        `).join('');
-        
-        document.getElementById('leaderboard').innerHTML = leaderboardHTML;
-    }
-
-    // Collect user information after quiz
+    // Collect user information
     collectUserInfo() {
-        console.log("Collecting user info");
-
         this.userInfo.name = document.getElementById('fullName').value;
         this.userInfo.contact = document.getElementById('contactNumber').value;
         this.userInfo.address = document.getElementById('address').value;
         this.userInfo.state = document.getElementById('state').value;
 
-        console.log("User info:", this.userInfo);
-
         if (this.validateUserInfo()) {
             this.saveQuizData();
+            this.showFullScore();
         }
     }
 
     // Validate user information
     validateUserInfo() {
         if (!this.userInfo.name || !this.userInfo.contact || !this.userInfo.address || !this.userInfo.state) {
-            alert('براہ کرم تمام فیلڈز پُر کریں');
+            alert('Please fill all fields');
             return false;
         }
         return true;
     }
 
-    // Share on WhatsApp with custom message
+    // Show full detailed score
+    showFullScore() {
+        this.showScreen('fullScoreScreen');
+        document.getElementById('detailedFinalScore').textContent = this.score;
+        
+        let message = '';
+        if (this.score >= 80) {
+            message = 'Masha Allah! You have excellent Islamic knowledge. You are among the top performers!';
+        } else if (this.score >= 60) {
+            message = 'Congratulations! You have good Islamic knowledge. Keep learning and improving!';
+        } else if (this.score >= 40) {
+            message = 'Good effort! Your Islamic knowledge is developing. Try again to improve your score!';
+        } else {
+            message = 'Nice try! Islamic knowledge is vast. Study more and try again tomorrow!';
+        }
+
+        document.getElementById('detailedResultMessage').innerHTML = `
+            <h3>${this.score >= 60 ? '🎉 Excellent Work!' : '💪 Keep Learning!'}</h3>
+            <p>${message}</p>
+            <p><strong>Final Score: ${this.score}/100</strong></p>
+        `;
+
+        // Display question breakdown
+        this.displayQuestionBreakdown();
+    }
+
+    // Display question-wise breakdown
+    displayQuestionBreakdown() {
+        const breakdownContainer = document.getElementById('questionBreakdown');
+        breakdownContainer.innerHTML = '';
+
+        this.quizQuestions.forEach((question, index) => {
+            const isCorrect = this.selectedAnswers[index] === question.correct;
+            const timeTaken = this.questionTimes[index];
+            const scoreEarned = this.questionScores[index];
+            const maxScore = 20;
+
+            const breakdownItem = document.createElement('div');
+            breakdownItem.className = `question-breakdown-item ${isCorrect ? 'correct' : 'incorrect'}`;
+            breakdownItem.innerHTML = `
+                <h4>Question ${index + 1}: ${question.question}</h4>
+                <p><strong>Your Answer:</strong> ${question.options[this.selectedAnswers[index]]}</p>
+                <p><strong>Correct Answer:</strong> ${question.options[question.correct]}</p>
+                <p><strong>Time Taken:</strong> ${timeTaken} seconds</p>
+                <p><strong>Score:</strong> ${scoreEarned}/${maxScore} points</p>
+                ${!isCorrect ? '<p style="color: #ff4444;">Incorrect answer: 0 points</p>' : 
+                  timeTaken > 10 ? `<p style="color: #ff4444;">Time penalty: -${maxScore - scoreEarned} points</p>` : 
+                  '<p style="color: #25D366;">Perfect timing: Full points!</p>'}
+            `;
+            breakdownContainer.appendChild(breakdownItem);
+        });
+    }
+
+    // Show leaderboard
+    showLeaderboard() {
+        this.showScreen('leaderboardScreen');
+        this.updateLeaderboard();
+    }
+
+    // Show user scoreboard
+    showScoreboard() {
+        this.showScreen('scoreboardScreen');
+        this.updateUserScoreboard();
+    }
+
+    // Update leaderboard
+    updateLeaderboard() {
+        const leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
+        const leaderboardContainer = document.getElementById('globalLeaderboard');
+        
+        if (leaderboard.length === 0) {
+            leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
+            return;
+        }
+
+        const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+        leaderboardContainer.innerHTML = top10.map((entry, index) => `
+            <div class="leaderboard-item">
+                <span>${index + 1}. ${entry.name || 'Anonymous'}</span>
+                <span>${entry.score} points</span>
+            </div>
+        `).join('');
+    }
+
+    // Update user scoreboard
+    updateUserScoreboard() {
+        const userScores = JSON.parse(localStorage.getItem('userScores') || '[]');
+        const scoreboardContainer = document.getElementById('userScoreboard');
+        
+        if (userScores.length === 0) {
+            scoreboardContainer.innerHTML = '<p>No previous scores found.</p>';
+            return;
+        }
+
+        scoreboardContainer.innerHTML = userScores.map((entry, index) => `
+            <div class="leaderboard-item">
+                <span>${new Date(entry.timestamp).toLocaleDateString()}</span>
+                <span>${entry.score} points</span>
+            </div>
+        `).join('');
+    }
+
+    // Share on WhatsApp
     shareOnWhatsApp() {
         const message = `🌙 *Islamic Quiz Challenge* 🌙
 
-I scored ${this.score}/100 in Islamic Quiz! Can you beat me? 🏆
+I scored ${this.score}/100 in Islamic Quiz! 🏆
 
-I challenge you to test your Islamic knowledge! 
-Can you beat my score? 
+${this.score >= 80 ? "Masha Allah! I have excellent Islamic knowledge!" : 
+  this.score >= 60 ? "Alhamdulillah! I have good Islamic knowledge!" :
+  this.score >= 40 ? "Alhamdulillah! I'm learning more about Islam!" :
+  "Insha Allah I will improve my Islamic knowledge!"}
+
+Can you beat my score? Test your Islamic knowledge!
 
 🔗 Take the quiz here: ${window.location.href}`;
 
@@ -349,15 +403,9 @@ Can you beat my score?
 
     // Share on Facebook
     shareOnFacebook() {
-        const message = `🌙 Islamic Quiz Challenge 🌙\n\nI scored ${this.score}/100 in Islamic Quiz! Can you beat me? 🏆`;
-        const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(message)}`;
+        const message = `🌙 Islamic Quiz Challenge 🌙\n\nI scored ${this.score}/100 in Islamic Quiz! 🏆\n\nCan you beat my score? Test your Islamic knowledge!`;
+        const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(message)}&u=${encodeURIComponent(window.location.href)}`;
         window.open(url, '_blank');
-    }
-
-    // Download Score as Image
-    downloadScoreImage() {
-        // This requires html2canvas library
-        alert("تصویر ڈاؤن لوڈ کرنے کے لیے html2canvas لائبریری شامل کریں");
     }
 
     // Save quiz data to Google Sheets
@@ -373,21 +421,17 @@ Can you beat my score?
             shareLink: `https://wa.me/?text=🌙 Islamic Quiz - I scored ${this.score}/100! 🏆 Test your knowledge: ${window.location.href}`
         };
 
-        console.log('Quiz Data:', quizData);
+        // Save to Google Sheets
         this.sendToGoogleSheets(quizData);
+        
+        // Save to local storage for leaderboard
+        this.saveToLocalStorage(quizData);
     }
 
     // Send data to Google Sheets
     sendToGoogleSheets(quizData) {
         const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
         
-        // Show loading
-        const submitBtn = document.querySelector('#userInfoForm button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Saving...';
-        submitBtn.disabled = true;
-
-        // Create form data
         const formData = new FormData();
         formData.append('name', quizData.name);
         formData.append('contact', quizData.contact);
@@ -401,45 +445,33 @@ Can you beat my score?
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
+        .then(response => response.text())
         .then(data => {
             console.log('Success:', data);
-            alert('آپ کی معلومات کامیابی سے محفوظ ہو گئی ہیں! شکریہ۔');
-            
-            // Update leaderboard with name
-            this.updateLeaderboardWithName();
-            
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
         })
         .catch((error) => {
             console.error('Error:', error);
-            alert('ڈیٹا محفوظ کرنے میں مسئلہ ہوا۔ براہ کرم دوبارہ کوشش کریں۔');
-            
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
         });
     }
 
-    // Update leaderboard with user name
-    updateLeaderboardWithName() {
+    // Save to local storage
+    saveToLocalStorage(quizData) {
+        // Save to leaderboard
         let leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
-        if (leaderboard.length > 0) {
-            // Find the latest entry and add name
-            const latestEntry = leaderboard[leaderboard.length - 1];
-            latestEntry.name = this.userInfo.name;
-            localStorage.setItem('quizLeaderboard', JSON.stringify(leaderboard));
-            
-            // Refresh leaderboard display
-            this.updateLeaderboard();
-        }
+        leaderboard.push({
+            name: quizData.name,
+            score: quizData.score,
+            timestamp: quizData.timestamp
+        });
+        localStorage.setItem('quizLeaderboard', JSON.stringify(leaderboard));
+
+        // Save to user scores
+        let userScores = JSON.parse(localStorage.getItem('userScores') || '[]');
+        userScores.push({
+            score: quizData.score,
+            timestamp: quizData.timestamp
+        });
+        localStorage.setItem('userScores', JSON.stringify(userScores));
     }
 }
 
