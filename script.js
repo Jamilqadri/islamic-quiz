@@ -383,7 +383,7 @@ class Quiz {
 
     // Update leaderboard from Google Sheets
     updateLeaderboardFromSheets() {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwEDpBqpPoIWceuNEhLFy3aQ9Q6WuL4N8W9JY-E-naXwl3M0rJVIWqq8rJCemmJcP9O/exec';
         
         // Show loading
         const leaderboardContainer = document.getElementById('globalLeaderboard');
@@ -503,7 +503,7 @@ Can you beat my score?
 
     // Send data to Google Sheets - SILENT VERSION
     sendToGoogleSheets(quizData) {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykadcKkBOa8CP6CmPcffQqZ4qu1K5j0h2hZKJ8qFm7lJ0DrC3jEw5tfY_EFY0m81Rw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwEDpBqpPoIWceuNEhLFy3aQ9Q6WuL4N8W9JY-E-naXwl3M0rJVIWqq8rJCemmJcP9O/exec';
         
         const params = new URLSearchParams({
             'name': quizData.name,
