@@ -486,18 +486,35 @@ class Quiz {
 
     // Share on WhatsApp
 shareOnWhatsApp() {
-    const message = `*Islamic Quiz Challenge* 🌙 I got ${this.score}/100 score! Can you beat me? 🏆 Name: ${this.userInfo.name} I challenge you to test your Islamic knowledge! Take the quiz here: https://alkunooz.in/islamic-quiz/`;
+    const message = `*Islamic Quiz Challenge* 🌙
+    
+I got ${this.score}/100 score! Can you beat me? 🏆
+
+Name: ${this.userInfo.name}
+
+I challenge you to test your Islamic knowledge!
+
+Take the quiz here: https://alkunooz.in/islamic-quiz/`;
+    
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 }
 
-// Share on Facebook
+// Share on Facebook  
 shareOnFacebook() {
-    const message = `Islamic Quiz Challenge - I scored ${this.score}/100! Can you beat my score?`;
+    const message = `Islamic Quiz Challenge 🌙
+    
+I scored ${this.score}/100!
+
+Name: ${this.userInfo.name}
+
+Can you beat my score?
+
+Take the quiz here: https://alkunooz.in/islamic-quiz/`;
+    
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://alkunooz.in/islamic-quiz/')}&quote=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 }
-
     // Save quiz data to Google Sheets
     saveQuizData() {
         const quizData = {
