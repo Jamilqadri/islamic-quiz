@@ -496,7 +496,7 @@ I got a PERFECT SCORE! Can you beat me? 🏆
 I challenge you to test your Islamic knowledge! 
 Can you beat my score? 
 
-🔗 Take the quiz here: ${window.location.href}`;
+🔗 Take the quiz here: ${https://alkunooz.in/islamic-quiz}`;
 
         const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
