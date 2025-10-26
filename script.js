@@ -589,4 +589,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded");
     const quiz = new Quiz();
     quiz.init();
-});
+}); 
