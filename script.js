@@ -485,29 +485,18 @@ class Quiz {
     }
 
     // Share on WhatsApp
-    shareOnWhatsApp() {
-        const message = `🌙 *Islamic Quiz Challenge* 🌙
+shareOnWhatsApp() {
+    const message = `*Islamic Quiz Challenge* 🌙 I got ${this.score}/100 score! Can you beat me? 🏆 Name: ${this.userInfo.name} I challenge you to test your Islamic knowledge! Take the quiz here: https://alkunooz.in/islamic-quiz/`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
 
-I got a PERFECT SCORE! Can you beat me? 🏆
-
-🏆 My Score: ${this.score}/100
-👤 Name: ${this.userInfo.name || 'Quiz Player'}
-
-I challenge you to test your Islamic knowledge! 
-Can you beat my score? 
-
-🔗 Take the quiz here: ${https://alkunooz.in/islamic-quiz}`;
-
-        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
-    }
-
-    // Share on Facebook
-    shareOnFacebook() {
-        const message = `🌙 Islamic Quiz Challenge 🌙\n\nI scored ${this.score}/100 in Islamic Quiz! 🏆\n\nCan you beat my score? Test your Islamic knowledge!`;
-        const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(message)}&u=${encodeURIComponent(window.location.href)}`;
-        window.open(url, '_blank');
-    }
+// Share on Facebook
+shareOnFacebook() {
+    const message = `Islamic Quiz Challenge - I scored ${this.score}/100! Can you beat my score?`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://alkunooz.in/islamic-quiz/')}&quote=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
 
     // Save quiz data to Google Sheets
     saveQuizData() {
