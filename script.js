@@ -45,15 +45,13 @@ class Quiz {
             const now = new Date();
             const nextPlayTime = new Date(lastPlayDate.getTime() + (15 * 60 * 60 * 1000));
             const timeLeft = nextPlayTime - now;
-
+            
             if (timeLeft > 0) {
                 const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                document.querySelector('.daily-notice p').textContent = 
-                    `⏳ You can play again in ${hours}h ${minutes}m`;
+                document.querySelector('.daily-notice p').textContent = `⏳ You can play again in ${hours}h ${minutes}m`;
             } else {
-                document.querySelector('.daily-notice p').textContent = 
-                    "✅ You can play now!";
+                document.querySelector('.daily-notice p').textContent = "✅ You can play now!";
                 this.hasPlayedToday = false;
                 document.getElementById('startQuiz').disabled = false;
             }
@@ -65,12 +63,12 @@ class Quiz {
         console.log("Initializing quiz...");
         this.showScreen('welcomeScreen');
         this.setupEventListeners();
-        
         this.updateCountdown();
+        
         this.countdownInterval = setInterval(() => {
             this.updateCountdown();
         }, 60000);
-
+        
         if (this.hasPlayedToday) {
             document.getElementById('startQuiz').disabled = true;
         }
@@ -91,38 +89,38 @@ class Quiz {
                 this.startQuiz();
             }
         });
-
+        
         document.getElementById('viewLeaderboard').addEventListener('click', () => {
             this.showLeaderboard();
         });
-
+        
         document.getElementById('viewScoreboard').addEventListener('click', () => {
             this.showScoreboard();
         });
-
+        
         document.querySelectorAll('.back-to-home').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.showScreen('welcomeScreen');
             });
         });
-
+        
         document.getElementById('nextQuestion').addEventListener('click', () => {
             this.nextQuestion();
         });
-
+        
         document.getElementById('userInfoForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.collectUserInfo();
         });
-
+        
         document.getElementById('shareWhatsApp').addEventListener('click', () => {
             this.shareOnWhatsApp();
         });
-
+        
         document.getElementById('shareFacebook').addEventListener('click', () => {
             this.shareOnFacebook();
         });
-
+        
         document.getElementById('playAgain').addEventListener('click', () => {
             this.showScreen('welcomeScreen');
         });
@@ -145,14 +143,14 @@ class Quiz {
     displayQuestion() {
         const question = this.quizQuestions[this.currentQuestion];
         document.getElementById('questionText').textContent = question.question;
-
+        
         const progress = ((this.currentQuestion) / 5) * 100;
         document.getElementById('progress').style.width = progress + '%';
         document.getElementById('questionCount').textContent = `Question ${this.currentQuestion + 1}/5`;
-
+        
         const optionsContainer = document.getElementById('optionsContainer');
         optionsContainer.innerHTML = '';
-
+        
         question.options.forEach((option, index) => {
             const button = document.createElement('button');
             button.textContent = option;
@@ -162,7 +160,7 @@ class Quiz {
             });
             optionsContainer.appendChild(button);
         });
-
+        
         this.startTimer();
         document.getElementById('nextQuestion').disabled = true;
     }
@@ -175,7 +173,7 @@ class Quiz {
         document.getElementById('timer').style.background = '#25D366';
         
         if (this.timer) clearInterval(this.timer);
-
+        
         this.timer = setInterval(() => {
             if (!this.isSecondPhase) {
                 this.timeLeft--;
@@ -215,7 +213,7 @@ class Quiz {
                 option.classList.add('selected');
             }
         });
-
+        
         this.selectedAnswers[this.currentQuestion] = selectedIndex;
         document.getElementById('nextQuestion').disabled = false;
     }
@@ -223,8 +221,8 @@ class Quiz {
     // Move to next question
     nextQuestion() {
         this.calculateCurrentQuestionScore();
-        
         this.currentQuestion++;
+        
         if (this.currentQuestion < 5) {
             this.displayQuestion();
         } else {
@@ -242,10 +240,10 @@ class Quiz {
             if (this.isSecondPhase) {
                 questionScore = Math.max(0, 20 - ((this.timeLeft - 1) * 2));
             }
-
-            this.questionTimes[this.currentQuestion] = this.timeLeft;
             
+            this.questionTimes[this.currentQuestion] = this.timeLeft;
             const isCorrect = selectedIndex === question.correct;
+            
             if (isCorrect) {
                 this.score += questionScore;
                 this.questionScores[this.currentQuestion] = questionScore;
@@ -256,7 +254,7 @@ class Quiz {
             this.questionTimes[this.currentQuestion] = this.timeLeft;
             this.questionScores[this.currentQuestion] = 0;
         }
-
+        
         if (this.timer) {
             clearInterval(this.timer);
         }
@@ -267,7 +265,7 @@ class Quiz {
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
         }
-
+        
         localStorage.setItem('lastQuizPlay', new Date().toISOString());
         this.showScreen('resultScreen');
         this.displayResults();
@@ -287,7 +285,7 @@ class Quiz {
         } else {
             message = 'Keep studying! Islam has vast knowledge to explore. 🌟';
         }
-
+        
         document.getElementById('resultMessage').innerHTML = `
             <h3>Congratulations!</h3>
             <p>${message}</p>
@@ -301,7 +299,7 @@ class Quiz {
         this.userInfo.contact = document.getElementById('contactNumber').value;
         this.userInfo.address = document.getElementById('address').value;
         this.userInfo.state = document.getElementById('state').value;
-
+        
         if (this.validateUserInfo()) {
             this.saveQuizData();
         }
@@ -331,13 +329,13 @@ class Quiz {
         } else {
             message = 'Nice try! Islamic knowledge is vast. Study more and try again tomorrow!';
         }
-
+        
         document.getElementById('detailedResultMessage').innerHTML = `
             <h3>${this.score >= 60 ? '🎉 Excellent Work!' : '💪 Keep Learning!'}</h3>
             <p>${message}</p>
             <p><strong>Final Score: ${this.score}/100</strong></p>
         `;
-
+        
         this.displayQuestionBreakdown();
     }
 
@@ -345,13 +343,13 @@ class Quiz {
     displayQuestionBreakdown() {
         const breakdownContainer = document.getElementById('questionBreakdown');
         breakdownContainer.innerHTML = '';
-
+        
         this.quizQuestions.forEach((question, index) => {
             const isCorrect = this.selectedAnswers[index] === question.correct;
             const timeTaken = this.questionTimes[index];
             const scoreEarned = this.questionScores[index] || 0;
             const maxScore = 20;
-
+            
             const breakdownItem = document.createElement('div');
             breakdownItem.className = `question-breakdown-item ${isCorrect ? 'correct' : 'incorrect'}`;
             
@@ -361,7 +359,7 @@ class Quiz {
             } else {
                 timeInfo = `<p style="color: #ff4444;">Time penalty: Answered in ${timeTaken}s (-${maxScore - scoreEarned} points)</p>`;
             }
-
+            
             breakdownItem.innerHTML = `
                 <h4>Question ${index + 1}: ${question.question}</h4>
                 <p><strong>Your Answer:</strong> ${this.selectedAnswers[index] !== undefined ? question.options[this.selectedAnswers[index]] : 'Not answered'}</p>
@@ -371,6 +369,7 @@ class Quiz {
                 ${timeInfo}
                 ${!isCorrect ? '<p style="color: #ff4444;">Incorrect answer: 0 points</p>' : ''}
             `;
+            
             breakdownContainer.appendChild(breakdownItem);
         });
     }
@@ -388,28 +387,28 @@ class Quiz {
         // Show loading
         const leaderboardContainer = document.getElementById('globalLeaderboard');
         leaderboardContainer.innerHTML = '<p>Loading leaderboard...</p>';
-
+        
         console.log('🔄 Fetching leaderboard from Google Sheets...');
-
+        
         fetch(scriptURL + '?function=getLeaderboard')
-        .then(response => {
-            console.log('📡 Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Leaderboard data:', data);
-            if (data.success && data.leaderboard) {
-                this.displayLeaderboard(data.leaderboard);
-            } else {
-                console.log('🔄 Falling back to local storage');
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Leaderboard data:', data);
+                if (data.success && data.leaderboard) {
+                    this.displayLeaderboard(data.leaderboard);
+                } else {
+                    console.log('🔄 Falling back to local storage');
+                    this.updateLeaderboardFromLocalStorage();
+                }
+            })
+            .catch(error => {
+                console.error('💥 Leaderboard fetch error:', error);
+                console.log('🔄 Falling back to local storage due to error');
                 this.updateLeaderboardFromLocalStorage();
-            }
-        })
-        .catch(error => {
-            console.error('💥 Leaderboard fetch error:', error);
-            console.log('🔄 Falling back to local storage due to error');
-            this.updateLeaderboardFromLocalStorage();
-        });
+            });
     }
 
     // Display leaderboard
@@ -420,7 +419,7 @@ class Quiz {
             leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
             return;
         }
-
+        
         const leaderboardHTML = leaderboardData.map(entry => `
             <div class="leaderboard-item">
                 <div>
@@ -444,8 +443,9 @@ class Quiz {
             leaderboardContainer.innerHTML = '<p>No scores yet. Be the first to play!</p>';
             return;
         }
-
+        
         const top10 = leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
+        
         const leaderboardHTML = top10.map((entry, index) => `
             <div class="leaderboard-item">
                 <div>
@@ -475,7 +475,7 @@ class Quiz {
             scoreboardContainer.innerHTML = '<p>No previous scores found.</p>';
             return;
         }
-
+        
         scoreboardContainer.innerHTML = userScores.map((entry, index) => `
             <div class="leaderboard-item">
                 <span>${new Date(entry.timestamp).toLocaleDateString()}</span>
@@ -485,9 +485,9 @@ class Quiz {
     }
 
     // Share on WhatsApp
-shareOnWhatsApp() {
-    const message = `*Islamic Quiz Challenge* 🌙
-    
+    shareOnWhatsApp() {
+        const message = `Islamic Quiz Challenge 🌙
+
 I got ${this.score}/100 score! Can you beat me? 🏆
 
 Name: ${this.userInfo.name}
@@ -495,15 +495,15 @@ Name: ${this.userInfo.name}
 I challenge you to test your Islamic knowledge!
 
 Take the quiz here: https://alkunooz.in/islamic-quiz/`;
-    
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-}
 
-// Share on Facebook  
-shareOnFacebook() {
-    const message = `Islamic Quiz Challenge 🌙
-    
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    }
+
+    // Share on Facebook
+    shareOnFacebook() {
+        const message = `Islamic Quiz Challenge 🌙
+
 I scored ${this.score}/100!
 
 Name: ${this.userInfo.name}
@@ -511,10 +511,11 @@ Name: ${this.userInfo.name}
 Can you beat my score?
 
 Take the quiz here: https://alkunooz.in/islamic-quiz/`;
-    
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://alkunooz.in/islamic-quiz/')}&quote=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-}
+
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://alkunooz.in/islamic-quiz/')}&quote=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    }
+
     // Save quiz data to Google Sheets
     saveQuizData() {
         const quizData = {
@@ -529,7 +530,7 @@ Take the quiz here: https://alkunooz.in/islamic-quiz/`;
         };
 
         console.log('Saving quiz data:', quizData);
-
+        
         // Save to Google Sheets (silent)
         this.sendToGoogleSheets(quizData);
         
@@ -560,8 +561,8 @@ Take the quiz here: https://alkunooz.in/islamic-quiz/`;
         
         // Send data silently
         fetch(fullURL, { mode: 'no-cors' })
-        .then(() => console.log('✅ Data sent to Google Sheets'))
-        .catch(() => console.log('✅ Data sent silently'));
+            .then(() => console.log('✅ Data sent to Google Sheets'))
+            .catch(() => console.log('✅ Data sent silently'));
     }
 
     // Save to local storage
@@ -588,4 +589,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded");
     const quiz = new Quiz();
     quiz.init();
-}); 
+});
